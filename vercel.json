@@ -7,7 +7,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "destination": "gov_news/wsgi.py"
+            "dest": "gov_news/wsgi.py"
         }
     ]
 }
