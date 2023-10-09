@@ -1,0 +1,257 @@
+{% extends 'base_app.html' %} {% load static %} 
+{% block title %}
+{{ post.post_title }}
+{% endblock title %}
+{% block content %}
+<style>
+  a{
+    text-decoration:none !important;
+  }
+  .content-detail img, .content-body p img{
+    display:block;
+    width:100% !important;
+
+  }
+</style>
+<section class="row m-0 new-detail">
+  <div class="col-md-2 col-12 aside-left mt-2 p-0 d-none  d-lg-block">
+    <div class="col-left mb-2">
+      <div class="title-top">
+        <p>Giới thiệu</p>
+      </div>
+      <div class="list-left">
+        <ul>
+          <li>
+            <a href="#">Giới thiệu chung</a>
+          </li>
+          <li>
+            <a href="#">Lịch sử văn hoá</a>
+          </li>
+          <li>
+            <a href="#">Thắng cảnh - du lịch</a>
+          </li>
+          <li>
+            <a href="#">Điều kiện tự nhiên</a>
+          </li>
+        </ul>
+      </div>
+      <a href="#"> <img class="d-block w-100" src="{% static 'user/img/ubnd.jpg' %}" alt="col-left img" /> </a>
+    </div>
+
+    <div class="col-left mb-2">
+      <div class="title-top">
+        <p>Lấy ý kiến góp ý</p>
+      </div>
+      <div class="list-left">
+        <ul>
+          <li>
+            <a href="#">Góp ý dự thảo văn bản quy phạm pháp luật</a>
+          </li>
+          <li>
+            <a href="#">Góp ý các quy định hành chính</a>
+          </li>
+          <li>
+            <a href="#">Hỏi & đáp</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-left mb-2">
+      <div class="title-top">
+        <p>Hệ thống văn bản</p>
+      </div>
+      <div class="list-left">
+        <ul>
+          <li>
+            <a href="#">Văn bản chỉ đạo điều hành</a>
+          </li>
+          <li>
+            <a href="#">Văn bản quy phạm pháp luật</a>
+          </li>
+          <li>
+            <a href="#">Công báo</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-left mb-2">
+      <div class="title-top">
+        <p>Báo cáo, thống kê</p>
+      </div>
+      <div class="list-left">
+        <ul>
+          <li>
+            <a href="#">Thông tin Kinh tế - Xã hội</a>
+          </li>
+          <li>
+            <a href="#">Chỉ số giá tiêu dùng</a>
+          </li>
+          <li>
+            <a href="#">Một số chỉ tiêu chủ yếu</a>
+          </li>
+          <li>
+            <a href="#">Số liệu vốn đầu tư</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8 col-12 mt-2">
+    <div class="news-main">
+      <div class="title-detail">
+        <p class="text-uppercase p-2">{{term.term.name}}</p>
+      </div>
+      <div class="content-detail px-3 pb-2">
+        {% comment %} top content {% endcomment %}
+        <div class="header-title ">
+          <h1 class="">{{ post.post_title }}</h1>
+          {% comment %} box date {% endcomment %}
+          <div class="top-panel ps-2 text-muted">{{ post.post_date }}</div>
+          <div class="second-title text-justify">
+            {{description_text}}
+          </div>
+        </div>
+        <div class='content-body'>
+
+          {{post.post_content|safe}}
+        </div>
+        <p class="fw-bold text-right ">{{post.post_author.display_name}}</p>
+      </div>
+    </div>
+
+    <div class="news-other">
+      <div class="news-other-title">
+        <p class="text-uppercase text-danger fw-bold p-2 m-0">Tin Liên Quan</p>
+      </div>
+      <div class="content-second text-justify" >
+        <ul class="news-other-list ">
+          {% for new in related_posts %}<li>
+            <a href="{% url 'news_detail' new.id %}"> {{new.post_title}}</a>
+            <span class="text-muted">({{new.post_date| date:"d/m/Y"}})</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+     <div class="box-comment mb-3">
+        <div class="box-comment-title">
+            <p class="text-uppercase text-danger fw-bold p-2 m-0">Bình Luận</p>
+        </div>
+        <div class="box-comment-form ">
+            <form class="form-group" method='post' action='{% url "news_comment" post.id %}'>
+              {% csrf_token %}
+                <div class="mb-3">
+                  <label for="content" class="form-label"></label>
+                  <textarea class="form-control" name="content" id="content" rows="3" placeholder=" nhập bình luận tại đây..."></textarea>
+                </div>
+                {% if not user.is_authenticated %}
+                <button type="submit" name="" id="" class="btn btn-primary " disabled role="button">Gửi Bình Luận</button>
+                {% else %}
+                <button type="submit" name="" id="" class="btn btn-primary "  role="button">Gửi Bình Luận</button>
+                {% endif %}
+            </form>
+            <div class="bottom-panel ps-2 ">Ý KIẾN BẠN ĐỌC ({{related_comment.count}})</div>
+            <div class="card-footer card-comments">
+              {% for comment in related_comment %}
+                  <div class="comment-text border-bottom">
+                    <div class="username w-100">
+                      <span class='fw-bold'>{{comment.author}}</span>
+                      <span class="text-muted float-end">{{comment.date|date:"d/m/Y"}}</span>
+                    </div><!-- /.username -->
+                    <span>{{comment.content}}</span>
+                  </div>
+              {% endfor %}
+              <!-- /.card-comment -->
+              <!-- /.card-comment -->
+            </div>
+        </div>
+     </div>
+  </div>
+  <div class="col-md-2 col-12 aside-right mt-2 p-0 d-none  d-lg-block">
+    <div class="col-left mb-2">
+      <a href="#"> <img class="d-block w-100" src="{% static 'user/img/mapdaknong.jpg' %}" alt="col-left img" /> </a>
+      <div class="title-top">
+        <p>Quy hoạch, phát triển</p>
+      </div>
+      <div class="list-left">
+        <ul>
+          <li>
+            <a href="#">Chiến lược, định hướng, kế hoạch phát triển ngành </a>
+          </li>
+          <li>
+            <a href="#">Quy hoạch xây dựng </a>
+          </li>
+          <li>
+            <a href="#">Bản đồ quy hoạch đô thị </a>
+          </li>
+          <li>
+            <a href="#">Quy hoạch, kế hoạch sử dụng đất </a>
+          </li>
+          <li>
+            <a href="#">Quy hoạch thu gom, tái chế, xử lý chất thải</a>
+          </li>
+          <li>
+            <a href="#">Các khu vực có nguy cơ xảy ra ô nhiễm môi trường</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-left mb-2">
+      <div class="title-top">
+        <p>Thông tin, tuyên truyền</p>
+      </div>
+      <div class="list-left">
+        <ul>
+          <li>
+            <a href="#">Học và làm theo lời Bác </a>
+          </li>
+          <li>
+            <a href="#">Chế độ, chính sách mới </a>
+          </li>
+          <li>
+            <a href="#">Tuyên truyền phổ biến pháp luật về Khiếu nại tố cáo </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-left mb-2">
+      <div class="title-top">
+        <p>Chỉ đạo, điều hành</p>
+      </div>
+      <div class="list-left">
+        <ul>
+          <li>
+            <a href="#">Văn bản chỉ đạo điều hành</a>
+          </li>
+          <li>
+            <a href="#">Tin tức chỉ đạo điều hành </a>
+          </li>
+          <li>
+            <a href="#">Thông tin khen thưởng </a>
+          </li>
+          <li>
+            <a href="#">Lịch công tác của Thường trực UBND Thành phố </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-left mb-2">
+      <div class="title-top">
+        <p>An ninh trật tự</p>
+      </div>
+      <div class="list-left">
+        <ul>
+          <li>
+            <a href="#">An ninh trật tự</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}

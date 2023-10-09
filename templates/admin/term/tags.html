@@ -1,0 +1,185 @@
+{% extends 'admin/base.html' %} {% load static %} {% load i18n admin_urls admin_list %} {% block title %}Quản lý Thẻ{% endblock title %} {% block contentwrapper %}
+<!-- Content Header (Page header) -->
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1 class="m-0 text-dark">
+          Danh sách thẻ <button class="btn" data-toggle="modal" data-target="#createModal"><i class="bi bi-file-plus text-primary"></i> thêm mới</button>
+        </h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="#">Home</a></li>
+        </ol>
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+<!-- Main content -->
+<section class="content row m-0">
+  <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form method="post" action="{% url 'create_tag' %}">
+          <div class="modal-header bg-blue">
+            <h5 class="modal-title" id="createModalLabel">Thêm Chuyên Mục Mới</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            {% csrf_token %}
+            <div class="form-group">
+              <!-- Tên Danh Mục -->
+              <div class="form-group">
+                <label>Tên thẻ:</label>
+                <input type="text" class="form-control" name="name" id="name" placeholder="Nhập tên danh mục ..." />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="description">Mô tả:</label>
+              <textarea class="form-control input-box" rows="2" id="description" name="description" placeholder="Enter ..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            <button type="submit" id="saveBtn" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="card col-xl-12 col-table m-0 p-3 pb-0">
+    <div class="card-header bg-blue mb-1">
+      <h3 class="card-title">Danh sách thẻ </h3>
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong>Có lỗi xảy ra:</strong>
+        <ul>
+          {% for field, errors in form.errors.items %} {% for error in errors %}
+          <li>{{field }}: {{ error }}</li>
+          {% endfor %} {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+    <table id="table" class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th class="col-1">Stt</th>
+          <th class="">Tên thẻ</th>
+          <th>Mô tả</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tag in tags %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td class="">{{ tag.name}}</td>
+          <td class="">{{ tag.description }}</td>
+          <td>
+            <div class="button_TG ml-3 d-flex">
+              <button class="btn btn-xs btn-primary mr-4" data-toggle="tooltip" data-placement="top" title="Xem">
+                <a class="nav-link active text-white" href=""><i class="bi bi-eye"></i></a>
+              </button>
+              {% if tag.deleted_at %}
+              <button class="btn btn-xs btn-warning" data-toggle="tooltip" data-placement="top" title="Khôi phục">
+                <a class="nav-link active text-white" href="{% url 'restore_tag' tag.id %}"><i class="bi bi-arrow-counterclockwise"></i> </a>
+              </button>
+              {% else %}
+              <button class="btn btn-xs btn-danger" data-toggle="tooltip" data-placement="top" title="Hủy bài đăng">
+                <a class="nav-link active text-white" href="{% url 'delete_tag' tag.id %}"><i class="bi bi-trash3"></i> </a>
+              </button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th class="col-1">Stt</th>
+          <th class="">Tên thẻ</th>
+          <th>Mô tả</th>
+          <th>Thao tác</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <!-- general form elements disabled -->
+</section>
+
+<script>
+  const categoryNameInput = document.getElementById("name");
+  const slugInput = document.getElementById("slug");
+  const categoryGroupSelect = document.getElementById("term_group");
+  const saveButton = document.querySelector(".save"); // Chọn nút "Lưu"
+  const saveChangeBtn = document.getElementById("modal-save-button"); // Chọn nút "Lưu"
+
+  // Thiết lập sự kiện kiểm tra khi nhập
+  categoryNameInput.addEventListener("input", updateSlug);
+
+  function updateSlug() {
+    const categoryName = categoryNameInput.value;
+    // Chuyển đổi chuỗi tiếng Việt có dấu thành không dấu
+    const slugValue = slugify(categoryName.trim());
+    slugInput.value = slugValue;
+
+    // Kiểm tra nếu trường "Tên Danh Mục" rỗng, vô hiệu hóa nút "Lưu"
+    if (categoryName.trim() === "") {
+      saveButton.disabled = true;
+    } else {
+      saveButton.disabled = false;
+    }
+  }
+
+  // Hàm chuyển đổi dấu tiếng Việt sang không dấu
+  function slugify(str) {
+    str = str.toLowerCase();
+    str = str.replace(/\s+/g, "-");
+    str = str.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, "a");
+    str = str.replace(/[èéẹẻẽêềếệểễ]/g, "e");
+    str = str.replace(/[ìíịỉĩ]/g, "i");
+    str = str.replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, "o");
+    str = str.replace(/[ùúụủũưừứựửữ]/g, "u");
+    str = str.replace(/[ỳýỵỷỹ]/g, "y");
+    str = str.replace(/đ/g, "d");
+    return str;
+  }
+  $(function () {
+
+  $(document).ready(function () {
+    // Sự kiện click cho nút chỉnh sửa
+    $(function () {
+      $("#tag-table").DataTable({
+        responsive: true,
+        autoWidth: false,
+        language: {
+          lengthMenu: "Hiển thị : _MENU_  hàng",
+          zeroRecords: "Không tìm thấy kết quả nào",
+          info: "Trang _PAGE_ của _PAGES_",
+          infoEmpty: "Không có dữ liệu",
+          infoFiltered: "(được lọc từ tổng số _MAX_ hàng)",
+          search: "Tìm kiếm:",
+          paginate: {
+            first: "Đầu",
+            last: "Cuối",
+            next: "Tiếp",
+            previous: "Trước",
+          },
+        },
+      });
+    });
+  });
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+
+{% endblock contentwrapper %}

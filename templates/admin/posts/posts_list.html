@@ -1,0 +1,140 @@
+{% extends 'admin/base.html' %} {% load static %} {% load i18n admin_urls admin_list %} {% block title %}Danh sách bài viết{% endblock title %} {% block contentwrapper %}
+<!-- Content Header (Page header) -->
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1 class="m-0 text-dark">
+          bài viết <a href="{% url 'create_post' %}"><i class="bi bi-file-plus text-primary"></i></a>
+        </h1>
+      </div>
+
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="#">Home</a></li>
+        </ol>
+      </div>
+      <!-- /.col -->
+    </div>
+    <div class="overview small-box p-2">
+      <div class="card card-primary collapsed-card">
+        <div class="card-header">
+          <div class="card-title">Bộ lọc nhanh</div>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="bi bi-plus"></i>
+            </button>
+          </div>
+          <!-- /.card-tools -->
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body" style="display: none;">
+          <ul>
+            <li><a href="{% url 'post' %}">{% with total_count=deleted_count.count|add:posts.count %} {{ total_count }} {% endwith %}</a> bài viết</li>
+            <li><a href="{% url 'post_filter' filter='post_status' val='published' %}">{{ published_count.count }}</a> đã xuất bản</li>
+            <li><a href="{% url 'post_filter' filter='post_status' val='pending' %}">{{ pending_count.count }}</a> đang chờ duyệt</li>
+            <li><a href="{% url 'post_filter' filter='post_status' val='draft' %}">{{ draft_count.count }}</a> bản nháp</li>
+            <li><a href="{% url 'post' %}">{{ other_count.count }}</a> bài khác</li>
+            <li><a href="{% url 'post_filter' filter='delete' val='true' %}">{{deleted_count.count}}</a> hủy xuất bản</li>
+          </ul>
+        </div>
+        <!-- /.card-body -->
+      </div>
+      <!-- /.card -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+<!-- Main content -->
+<section class="content">
+  <div class="card">
+    <div class="card-header bg-warning">
+      <h3 class="card-title">Danh Sách Tin Tức</h3>
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body">
+      <table id="post_list" class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Stt</th>
+            <th class="col-3">Tiêu đề</th>
+            <th>Tác giả</th>
+            <th>Ngày đăng</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in posts_table %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td class="p-0 m-0"><p class="multi-truncate">{{ post.post_title }}</p></td>
+            <td class="">{{ post.post_author.display_name }}</td>
+            {# Lấy tên tác giả thay vì ID tác giả #}
+            <td>{{ post.post_date| date:"d/m/Y" }}</td>
+            <td><p class="multi-truncate">{{ post.post_name}}</p></td>
+            <td>
+              <div class="button_TG ml-3 d-flex">
+                <button class="btn btn-xs btn-primary mr-4" data-toggle="tooltip" data-placement="top" title="Xem bài đăng">
+                  <a class="nav-link active text-white" href="{% url 'news_detail' post.id %}"><i class="bi bi-eye"></i></a>
+                </button>
+                <button class="btn btn-xs btn-success mr-4" data-toggle="tooltip" data-placement="top" title="Sửa ">
+                  <a class="nav-link active text-white" href="{% url 'edit_post' post.id %}"><i class="bi bi-pencil"></i> </a>
+                </button>
+                {% if post.deleted_at %}
+                <button class="btn btn-xs btn-warning" data-toggle="tooltip" data-placement="top" title="Khôi phục">
+                  <a class="nav-link active text-white" href="{% url 'restore_post' post.id %}"><i class="bi bi-arrow-counterclockwise"></i> </a>
+                </button>
+                {% else %}
+                <button class="btn btn-xs btn-danger" data-toggle="tooltip" data-placement="top" title="Hủy bài đăng">
+                  <a class="nav-link active text-white" href="{% url 'delete_post' post.id %}"><i class="bi bi-trash3"></i> </a>
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Stt</th>
+            <th>Tiêu đề</th>
+            <th>Tác giả</th>
+            <th>Ngày đăng</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <!-- /.card-body -->
+  </div>
+</section>
+<script>
+  $(function () {
+    $("#post_list").DataTable({
+      responsive: true,
+      autoWidth: false,
+      language: {
+        lengthMenu: "Hiển thị : _MENU_  hàng",
+        zeroRecords: "Không tìm thấy kết quả nào",
+        info: "Trang _PAGE_ của _PAGES_",
+        infoEmpty: "Không có dữ liệu",
+        infoFiltered: "(được lọc từ tổng số _MAX_ hàng)",
+        search: "Tìm kiếm:",
+        paginate: {
+          first: "Đầu",
+          last: "Cuối",
+          next: "Tiếp",
+          previous: "Trước",
+        },
+      },
+    });
+  });
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+{% endblock contentwrapper %}
